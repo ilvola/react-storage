@@ -1,93 +1,59 @@
-// Importa Hooks esenciales de React: useEffect para efectos secundarios y useState para el estado.
-import { use, useEffect, useState } from 'react'
 
-// Importa los estilos CSS específicos para este componente.
+import {useEffect, useState} from 'react'
 import './App.css'
-
-// Importa los componentes Form y List.
 import Form from './components/Form'
 import List from './components/List'
 
-// Define el componente principal de la aplicación.
 function App() {
+  const [items, setItems] = useState([]);
+  const [itemToEdit, setItemToEdit] = useState(null);
 
-// 1. Gestión del Estado Global de la Aplicación:
-// 'items': Un array que guarda todos los elementos de la lista.
-// 'setItems': La función para actualizar la lista de elementos.
-  const [items, setItems] = useState([])
-
-// 'itemToEdit': Un objeto que representa el elemento que el usuario está editando.
-// Si es null, significa que no se está editando ningún elemento.
-  const[itemToEdit, setItemToEdit] = useState(null)
-  
-
-// 2. Carga Inicial de Datos:
-// Este useEffect se ejecuta una sola vez al montar el componente (gracias al array de dependencias vacío `[]`).
-// Su función es cargar los ítems guardados previamente en el localStorage del navegador
-// o inicializar la lista como vacía si no hay nada guardado.
   useEffect(() => {
-    const storedItems = JSON.parse(localStorage.getItem('items')) || []
-    setItems(storedItems)
-  }, []) // El array vacío asegura que este efecto solo se ejecute al inicio.
+    const storedItems = JSON.parse(localStorage.getItem('items')) || [];
+    setItems(storedItems);
+  }, []);
 
-// 3. Guardado de Datos:
-// Este useEffect se ejecuta cada vez que el array items cambia.
-// Su propósito es mantener el localStorage sincronizado, guardando la lista actual de ítems.
   useEffect(() => {
     localStorage.setItem('items', JSON.stringify(items));
-  }, [items]); // Se ejecuta cada vez que items cambia.
+  }, [items]);
 
-// 4. Lógica para Añadir o Actualizar un Ítem:
-// Esta función maneja tanto la adición de nuevos ítems como la actualización de los existentes.
-  const addOrUpdateItem = (value) => {
-
-// Si itemToEdit tiene un valor, estamos en modo edición.
+  const addOrUpdateItem = (newItemData) => {
     if (itemToEdit) {
-
-// Mapea la lista de ítems: si el ID coincide con el itemToEdit,
-// actualiza su value; de lo contrario, deja el ítem como está.
-      setItems(items.map(item => 
-        item.id === itemToEdit.id ? {...item,value} : item))
-// Después de actualizar, reinicia itemToEdit a null para salir del modo edición.
-    setItemToEdit(null)
+      setItems(items.map((item) => (item.id === itemToEdit.id ? { ...item, ...newItemData } : item)));
+      setItemToEdit(null);
     } else {
-
-// Si itemToEdit es null, estamos añadiendo un nuevo ítem.
-// Crea un nuevo ítem con un ID único (marca de tiempo actual) y el value proporcionado.
-// Agrega este nuevo ítem a la lista existente.
-      setItems([...items, { id: Date.now(), value }])
+      setItems([...items, { id: Date.now(), ...newItemData }]);
     }
-  }
+  };
 
-// 5. Lógica para Eliminar un Ítem:
-// Filtra la lista de ítems, excluyendo el ítem cuyo id coincide con el id proporcionado.
   const deleteItem = (id) => {
-    setItems(items.filter(item => item.id !== id))
-  }
+    setItems(items.filter((item) => item.id !== id));
+    if (itemToEdit && itemToEdit.id === id) {
+      setItemToEdit(null);
+    }
+  };
 
-// 6. Lógica para Iniciar la Edición de un Ítem:
-// Establece el itemToEdit con el objeto del ítem que se desea editar.
-// Esto activa el modo de edición en el componente Form.
   const editItem = (item) => {
-    setItemToEdit(item)
-  }
+    setItemToEdit(item);
+  };
 
-// 7. Renderizado de la Interfaz de Usuario:
-// Renderiza la estructura principal de la aplicación.
   return (
-    <div className="App">
+    <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center font-sans"> {/* Fondo exterior cambiado a bg-white y dirección de flex a columna */}
+      
 
-{/* Renderiza el componente Form, pasándole la función addOrUpdateItem */}
-{/* y el itemToEdit actual para que el formulario se adapte (agregar/editar). */}
-      <Form addOrUpdateItem={addOrUpdateItem} itemToEdit={itemToEdit} />
+      <h1 className="text-4xl font-semibold text-center text-gray-900 mb-8 tracking-tight"> {/* mb-8 para espacio */}
+        Evaluación de Alumnos
+      </h1>
 
-{/* Renderiza el componente List, pasándole la lista de items actual, */}
-{/* y las funciones deleteItem y editItem para que la lista y sus ítems individuales */}
-{/* puedan interactuar y modificar el estado principal. */}
-      <List items={items} deleteItem={deleteItem} editItem={editItem} />
+      <div className="bg-gray-50 p-8 rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          {itemToEdit ? 'Editar evaluación' : 'Agregar nueva evaluación'}
+        </h2>
+        <Form addOrUpdateItem={addOrUpdateItem} itemToEdit={itemToEdit} />
+        <List items={items} deleteItem={deleteItem} editItem={editItem} />
+      </div>
     </div>
-  )
+  );
 }
+export default App;
 
-// Exporta el componente App como el componente raíz de la aplicación.
-export default App

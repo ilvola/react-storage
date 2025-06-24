@@ -1,67 +1,87 @@
-// Importa los Hooks useState para gestionar el estado del componente
-// y useEffect para ejecutar lógica en diferentes ciclos de vida del componente.
-
-import { useState,useEffect } from 'react';
-
-
-// Componente funcional Form que recibe addOrUpdateItem (una función)
-// y itemToEdit (el elemento a editar, si existe) como props.
+import { useEffect, useState } from 'react';
 
 function Form({ addOrUpdateItem, itemToEdit }) {
+  const [nameInput, setNameInput] = useState('');
+  const [subjectInput, setSubjectInput] = useState('');
+  const [gpaInput, setGpaInput] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-// 1. Gestión del Estado del Input:
-// inputValue guarda el texto actual del campo de entrada.
+  useEffect(() => {
+    if (itemToEdit) {
+      setNameInput(itemToEdit.name || '');
+      setSubjectInput(itemToEdit.subject || '');
+      setGpaInput(itemToEdit.gpa !== undefined ? String(itemToEdit.gpa) : '');
+    } else {
+      setNameInput('');
+      setSubjectInput('');
+      setGpaInput('');
+    }
+    setErrorMessage('');
+  }, [itemToEdit]);
 
-    const [inputValue, setInputValue] = useState('');
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-// 2. Sincronización del Input con el Elemento a Editar:
-// Este efecto se encarga de rellenar el campo de entrada
-// con el valor del itemToEdit cuando se selecciona un elemento para editar,
-// o de vaciarlo si no hay un elemento en edición.
-// Se ejecuta cada vez que itemToEdit cambia.
+    if (nameInput.trim() === '' || subjectInput.trim() === '') {
+      setErrorMessage('Los campos Nombre y Asignatura no pueden estar vacíos.');
+      return;
+    }
 
+    const parsedGpa = parseFloat(gpaInput);
+    if (isNaN(parsedGpa) || parsedGpa < 0 || parsedGpa > 7) {
+      setErrorMessage('El Promedio debe ser un número entre 0.0 y 7.0.');
+      return;
+    }
 
-    useEffect(() => {
-        if (itemToEdit) {
-            setInputValue(itemToEdit.value);
-        } else {
-            setInputValue('');
-        }
-    }, [itemToEdit]);
+    addOrUpdateItem({
+      name: nameInput.trim(),
+      subject: subjectInput.trim(),
+      gpa: parsedGpa,
+    });
 
-// 3. Manejo del Envío del Formulario:
-// Función que se ejecuta al enviar el formulario.
-// Evita la recarga de la página, 
-// pasa el inputValue al componente padre usando addOrUpdateItem, y luego limpia el campo de entrada.
+    setNameInput('');
+    setSubjectInput('');
+    setGpaInput('');
+    setErrorMessage('');
+  };
 
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        addOrUpdateItem(inputValue);
-        setInputValue('');
-    };
-
-// 4. Estructura Visual del Formulario:
-// Renderiza un formulario con un campo de texto y un botón.
-// El input es controlado por inputValue y actualiza el estado al escribir.
-// El texto del button cambia dinámicamente a "Actualizar" si hay un itemToEdit,
-// de lo contrario, es "Agregar".
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Ingrese texto"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-            />
-            <button type="submit">
-                {itemToEdit ? 'Actualizar' : 'Agregar'}
-            </button>
-        </form>
-    )
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 mb-8 p-4 bg-white shadow-lg rounded-xl">
+      <input
+        type="text"
+        placeholder="Ingrese Nombre..."
+        value={nameInput}
+        onChange={(e) => setNameInput(e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 w-full"
+      />
+      <input
+        type="text"
+        placeholder="Ingrese Asignatura..."
+        value={subjectInput}
+        onChange={(e) => setSubjectInput(e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 w-full"
+      />
+      <input
+        type="number"
+        step="0.1"
+        min="0"
+        max="7"
+        placeholder="Ingrese Promedio (0.0-7.0)..."
+        value={gpaInput}
+        onChange={(e) => setGpaInput(e.target.value)}
+        className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 w-full"
+      />
+      {errorMessage && (
+        <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+      )}
+      <button
+        type="submit"
+        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+      >
+        {itemToEdit ? 'Actualizar' : 'Agregar'}
+      </button>
+    </form>
+  );
 }
-
-// Exporta el componente para que pueda ser utilizado en otras partes de la aplicación.
 
 export default Form;

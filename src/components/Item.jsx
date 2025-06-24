@@ -1,34 +1,53 @@
-// Componente funcional Item que representa un elemento individual en una lista.
-// Recibe tres props del componente padre:
-// - 'item': El objeto del elemento que se va a mostrar (ej. { id: 1, value: "Mi tarea" }).
-// - 'deleteItem': Una función que se llama para eliminar este elemento.
-// - 'editItem': Una función que se llama para iniciar la edición de este elemento.
+function Item({ item, deleteItem, editItem }) {
+  const getClassification = (gpa) => {
+    if (gpa >= 1.0 && gpa <= 3.9) {
+      return 'Deficiente';
+    } else if (gpa >= 4.0 && gpa <= 5.5) {
+      return 'Con mejora';
+    } else if (gpa >= 5.6 && gpa <= 6.4) {
+      return 'Buen trabajo';
+    } else if (gpa >= 6.5 && gpa <= 7.0) {
+      return 'Destacado';
+    }
+    return 'N/A';
+  };
 
-function Item ({ item,deleteItem,editItem}){
+  const classification = getClassification(item.gpa);
 
-// 1. Estructura Visual del Elemento de Lista:
-// Renderiza un elemento de lista HTML (<li>).
+  return (
+    <li className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white shadow-md rounded-lg mb-3">
+      <div className="flex-grow pr-4 mb-2 sm:mb-0">
+        <p className="text-lg font-semibold text-gray-800">
+          <span className="font-bold">Nombre:</span> {item.name}
+        </p>
+        <p className="text-base text-gray-700">
+          <span className="font-bold">Asignatura:</span> {item.subject}
+        </p>
+        <p className="text-base text-gray-700">
+          <span className="font-bold">Promedio:</span> {item.gpa !== undefined ? item.gpa.toFixed(1) : 'N/A'}
+          <span className="ml-2 px-2 py-1 text-sm font-semibold rounded-full text-blue-800">
+            {classification}
+          </span>
+        </p>
+      </div>
 
-    return (
-        <li>
-            {item.value}
+      <div className="flex space-x-2 flex-shrink-0">
+        <button
+          onClick={() => editItem(item)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          Editar
+        </button>
 
-            {/* Botón para editar el elemento. */}
-            {/* Al hacer clic, llama a la función editItem del componente padre */}
-            {/* pasándole el objeto item para que el padre sepa qué editar. */}
-
-            <button onClick={() => editItem(item)}>Editar</button>
-
-            {/* Botón para eliminar el elemento. */}
-            {/* Al hacer clic, llama a la función deleteItem del componente padre */}
-            {/* pasándole solo el id del item para que el padre sepa cuál eliminar. */}
-            
-            <button onClick={() => deleteItem(item.id)}>Eliminar</button>
-        </li>
-    );
+        <button
+          onClick={() => deleteItem(item.id)}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          Eliminar
+        </button>
+      </div>
+    </li>
+  );    
 }
-
-// Exporta el componente Item para que pueda ser importado y utilizado en otras partes de la aplicación,
-// típicamente dentro de una lista de elementos.
 
 export default Item;
